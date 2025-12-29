@@ -1,0 +1,7 @@
+{
+  "name": "DigiCard - AI Business Cards",
+  "description": "Create, customize, and share professional digital business cards with AI-powered bio generation.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
