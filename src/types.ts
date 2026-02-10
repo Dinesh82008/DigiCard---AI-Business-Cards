@@ -1,3 +1,5 @@
+
+// Syncing types with the full set of supported templates and sections used in App.tsx and TemplateRenderer.tsx
 export interface User {
   id: string;
   name: string;
@@ -16,26 +18,18 @@ export interface Plan {
     isPopular?: boolean;
 }
 
+// Added 'venura' to TemplateId to fix assignability error in App.tsx
 export type TemplateId = 
-  | 'minimal' 
-  | 'modern' 
-  | 'dark' 
-  | 'professional' 
-  | 'creative' 
-  | 'elegant' 
-  | 'tech' 
-  | 'gradient' 
-  | 'glass' 
-  | 'playful';
+  | 'minimal' | 'modern' | 'dark' | 'professional' | 'creative' 
+  | 'elegant' | 'tech' | 'gradient' | 'glass' | 'playful'
+  | 'neobrutalist' | 'monochrome' | 'softui' | 'luxe' | 'cyberpunk'
+  | 'retro' | 'botanical' | 'compact' | 'insta' | 'terminal' | 'venura';
 
 export const PREMIUM_TEMPLATES: TemplateId[] = [
-  'professional', 
-  'creative', 
-  'elegant', 
-  'tech', 
-  'gradient', 
-  'glass', 
-  'playful'
+  'professional', 'creative', 'elegant', 'tech', 'gradient', 
+  'glass', 'playful', 'neobrutalist', 'monochrome', 'softui', 
+  'luxe', 'cyberpunk', 'retro', 'botanical', 'compact', 
+  'insta', 'terminal', 'venura'
 ];
 
 export interface SocialLinks {
@@ -66,7 +60,7 @@ export interface BusinessHour {
   isClosed: boolean;
 }
 
-export type SectionId = 'services' | 'hours' | 'map';
+export type SectionId = 'about' | 'services' | 'hours' | 'map' | 'gallery';
 
 export interface CardData {
   id: string;
@@ -80,6 +74,8 @@ export interface CardData {
   jobTitle: string;
   companyName: string;
   bio: string;
+  aboutTitle: string;
+  aboutText: string;
   profileImage?: string; // URL or base64
   bannerImage?: string; // URL or base64 (for modern template)
   logoImage?: string; // URL or base64
@@ -90,6 +86,9 @@ export interface CardData {
   // Content Sections
   services: Service[];
   businessHours: BusinessHour[];
+  gallery: string[];
+  // Added tags property to resolve "Property 'tags' does not exist on type 'CardData'"
+  tags: string[];
   showMap: boolean;
   customMapUrl?: string;
   
@@ -110,10 +109,15 @@ export const DEFAULT_CARD: CardData = {
   jobTitle: 'Job Title',
   companyName: 'Company Inc.',
   bio: 'A short bio about yourself goes here.',
+  aboutTitle: 'About Us',
+  aboutText: '',
   profileImage: 'https://picsum.photos/200',
   bannerImage: 'https://picsum.photos/800/300',
   socials: {},
   services: [],
+  gallery: [],
+  // Initialize tags in DEFAULT_CARD
+  tags: [],
   businessHours: [
     { id: '1', day: 'Monday', open: '09:00', close: '17:00', isClosed: false },
     { id: '2', day: 'Tuesday', open: '09:00', close: '17:00', isClosed: false },
@@ -124,7 +128,7 @@ export const DEFAULT_CARD: CardData = {
     { id: '7', day: 'Sunday', open: '10:00', close: '14:00', isClosed: true },
   ],
   showMap: true,
-  sectionOrder: ['services', 'hours', 'map'],
+  sectionOrder: ['about', 'services', 'gallery', 'hours', 'map'],
   createdAt: Date.now(),
   views: 0,
 };

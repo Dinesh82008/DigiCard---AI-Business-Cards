@@ -21,13 +21,13 @@ export type TemplateId =
   | 'minimal' | 'modern' | 'dark' | 'professional' | 'creative' 
   | 'elegant' | 'tech' | 'gradient' | 'glass' | 'playful'
   | 'neobrutalist' | 'monochrome' | 'softui' | 'luxe' | 'cyberpunk'
-  | 'retro' | 'botanical' | 'compact' | 'insta' | 'terminal';
+  | 'retro' | 'botanical' | 'compact' | 'insta' | 'terminal' | 'venura';
 
 export const PREMIUM_TEMPLATES: TemplateId[] = [
   'professional', 'creative', 'elegant', 'tech', 'gradient', 
   'glass', 'playful', 'neobrutalist', 'monochrome', 'softui', 
   'luxe', 'cyberpunk', 'retro', 'botanical', 'compact', 
-  'insta', 'terminal'
+  'insta', 'terminal', 'venura'
 ];
 
 export interface SocialLinks {
@@ -58,7 +58,7 @@ export interface BusinessHour {
   isClosed: boolean;
 }
 
-export type SectionId = 'about' | 'services' | 'hours' | 'map';
+export type SectionId = 'about' | 'services' | 'hours' | 'map' | 'gallery';
 
 export interface CardData {
   id: string;
@@ -78,7 +78,10 @@ export interface CardData {
   socials: SocialLinks;
   services: Service[];
   businessHours: BusinessHour[];
+  gallery: string[];
+  tags: string[];
   showMap: boolean;
+  showQrCode: boolean;
   customMapUrl?: string;
   sectionOrder: SectionId[];
   createdAt: number;
@@ -89,18 +92,20 @@ export const DEFAULT_CARD: CardData = {
   id: '',
   userId: '',
   slug: '',
-  templateId: 'minimal',
-  primaryColor: '#4f46e5',
+  templateId: 'venura',
+  primaryColor: '#2563eb',
   fullName: 'Your Name',
-  jobTitle: 'Professional Title',
+  jobTitle: 'Your Profession',
   companyName: 'Your Company',
-  bio: 'Helping businesses thrive through innovation and strategy.',
-  aboutTitle: 'About Us',
-  aboutText: '',
+  bio: 'Helping businesses thrive through innovation.',
+  aboutTitle: 'ABOUT US',
+  aboutText: 'Welcome to our professional digital presence.',
   profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
   bannerImage: 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=800',
   socials: {},
   services: [],
+  gallery: [],
+  tags: ['Professional', 'Expert', 'Consultant'],
   businessHours: [
     { id: '1', day: 'Monday', open: '09:00', close: '17:00', isClosed: false },
     { id: '2', day: 'Tuesday', open: '09:00', close: '17:00', isClosed: false },
@@ -111,7 +116,8 @@ export const DEFAULT_CARD: CardData = {
     { id: '7', day: 'Sunday', open: '10:00', close: '14:00', isClosed: true },
   ],
   showMap: true,
-  sectionOrder: ['about', 'services', 'hours', 'map'],
+  showQrCode: true,
+  sectionOrder: ['about', 'services', 'gallery', 'hours', 'map'],
   createdAt: Date.now(),
   views: 0,
 };

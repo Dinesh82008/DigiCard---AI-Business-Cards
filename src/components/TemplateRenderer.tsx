@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { CardData, SocialLinks, SectionId } from '../types';
+import React, { useState } from 'react';
+import { CardData, SocialLinks, SectionId, Service, BusinessHour } from '../types';
 import { Icons } from './Icons';
 
 interface TemplateProps {
@@ -10,20 +9,60 @@ interface TemplateProps {
 
 // --- Content Block Components ---
 
+const AboutBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
+    if (!card.aboutText) return null;
+    return (
+        <div className="mb-8 w-full text-left animate-fade-in-up px-2">
+            <h3 className={`text-center font-bold uppercase tracking-widest text-[10px] mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {card.aboutTitle || 'About Us'}
+            </h3>
+            <div className={`p-5 rounded-2xl border leading-relaxed text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-100 text-gray-600 shadow-sm'}`}>
+                {card.aboutText.split('\n').map((para, i) => (
+                    <p key={i} className={i > 0 ? 'mt-3' : ''}>{para}</p>
+                ))}
+                {card.tags && card.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-6">
+                        {card.tags.map((tag, i) => (
+                            <span key={i} className="text-[8px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 uppercase tracking-widest">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const GalleryBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
+    if (!card.gallery || card.gallery.length === 0) return null;
+    return (
+        <div className="mb-8 w-full text-left animate-fade-in-up px-2">
+            <h3 className={`text-center font-bold uppercase tracking-widest text-[10px] mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Gallery</h3>
+            <div className="grid grid-cols-2 gap-2">
+                {card.gallery.map((img, i) => (
+                    <div key={i} className="aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]">
+                        <img src={img} className="w-full h-full object-cover" alt={`Gallery ${i}`} />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const ServicesBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
     if (!card.services || card.services.length === 0) return null;
-    
     return (
-        <div className="mb-8 w-full">
-            <h3 className={`text-center font-bold uppercase tracking-wider text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Our Services</h3>
+        <div className="mb-8 w-full text-left animate-fade-in-up px-2">
+            <h3 className={`text-center font-bold uppercase tracking-widest text-[10px] mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Our Services</h3>
             <div className="grid gap-3">
                 {card.services.map(s => (
                     <div key={s.id} className={`p-4 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'}`}>
                         <div className="flex justify-between items-start mb-1">
-                            <h4 className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{s.title}</h4>
-                            {s.price && <span className={`text-sm font-semibold px-2 py-0.5 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>{s.price}</span>}
+                            <h4 className={`font-bold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{s.title}</h4>
+                            {s.price && <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>{s.price}</span>}
                         </div>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{s.description}</p>
+                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{s.description}</p>
                     </div>
                 ))}
             </div>
@@ -33,17 +72,21 @@ const ServicesBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card,
 
 const HoursBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
     if (!card.businessHours || card.businessHours.length === 0) return null;
+    const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
 
     return (
-        <div className="mb-8 w-full">
-            <h3 className={`text-center font-bold uppercase tracking-wider text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Office Hours</h3>
-            <div className={`rounded-xl overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                {card.businessHours.map((h, i) => (
-                    <div key={h.id} className={`flex justify-between items-center p-3 text-sm border-b last:border-0 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-100 text-gray-600'} ${i % 2 === 0 ? (darkMode ? 'bg-opacity-50' : 'bg-gray-50') : ''}`}>
-                        <span className="font-medium">{h.day}</span>
-                        <span>{h.isClosed ? 'Closed' : `${h.open} - ${h.close}`}</span>
-                    </div>
-                ))}
+        <div className="mb-8 w-full text-left animate-fade-in-up px-2">
+            <h3 className={`text-center font-bold uppercase tracking-widest text-[10px] mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Business Hours</h3>
+            <div className={`rounded-2xl overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-100 shadow-sm'}`}>
+                {card.businessHours.map((h) => {
+                    const isToday = h.day === currentDay;
+                    return (
+                        <div key={h.id} className={`flex justify-between items-center p-3 text-[11px] border-b last:border-0 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-white border-gray-50 text-gray-600'} ${isToday ? (darkMode ? 'bg-zinc-700 font-bold text-white' : 'bg-blue-50 font-bold text-blue-700') : ''}`}>
+                            <span className="font-medium">{h.day}</span>
+                            <span>{h.isClosed ? 'Closed' : `${h.open} - ${h.close}`}</span>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
@@ -51,653 +94,550 @@ const HoursBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, da
 
 const MapBlock: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
     if (!card.showMap || !card.socials.address) return null;
-    
-    // Default Map Embed URL if custom one isn't provided
     const encodedAddress = encodeURIComponent(card.socials.address);
     const mapSrc = card.customMapUrl || `https://maps.google.com/maps?q=${encodedAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
     return (
-        <div className="mb-8 w-full">
-             <h3 className={`text-center font-bold uppercase tracking-wider text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Find Us</h3>
+        <div className="mb-8 w-full text-left animate-fade-in-up px-2">
+             <h3 className={`text-center font-bold uppercase tracking-widest text-[10px] mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Find Us</h3>
              <div className="w-full h-48 bg-gray-200 rounded-xl overflow-hidden shadow-inner relative">
-                 <iframe 
-                    width="100%" 
-                    height="100%" 
-                    src={mapSrc} 
-                    frameBorder="0" 
-                    scrolling="no" 
-                    marginHeight={0} 
-                    marginWidth={0}
-                    className="w-full h-full"
-                 ></iframe>
-                 <div className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur text-xs p-2 text-center text-gray-600">
-                     {card.socials.address}
+                 <iframe width="100%" height="100%" src={mapSrc} frameBorder="0" scrolling="no" className="w-full h-full grayscale opacity-80 transition hover:grayscale-0"></iframe>
+                 <div className="absolute bottom-0 inset-x-0 bg-white/90 backdrop-blur text-[10px] p-2 text-center text-gray-600 font-bold">
+                    <Icons.MapPin size={10} className="inline mr-1" /> {card.socials.address}
                  </div>
              </div>
         </div>
     );
 };
 
-// Helper component to render sections in order
-const DynamicSections: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
-    // Default order if not set
-    const order = card.sectionOrder || ['services', 'hours', 'map'];
-    
+const QrCodeSection: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
+    const [visible, setVisible] = useState(false);
+    const cardUrl = window.location.origin + '/#/card/' + (card.id || 'preview');
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(cardUrl)}`;
+
+    if (!card.showQrCode) return null;
+
     return (
-        <>
-            {order.map(sectionId => {
-                switch(sectionId) {
-                    case 'services': return <ServicesBlock key="services" card={card} darkMode={darkMode} />;
-                    case 'hours': return <HoursBlock key="hours" card={card} darkMode={darkMode} />;
-                    case 'map': return <MapBlock key="map" card={card} darkMode={darkMode} />;
-                    default: return null;
-                }
-            })}
-        </>
+        <div className="w-full mt-8 px-2 flex flex-col items-center">
+            <button 
+                onClick={() => setVisible(!visible)}
+                className={`w-full py-4 border-2 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 group font-black text-xs uppercase tracking-widest ${
+                    darkMode 
+                    ? 'border-zinc-800 text-zinc-400 hover:bg-zinc-800' 
+                    : 'border-slate-100 text-slate-500 hover:bg-slate-50'
+                }`}
+            >
+                <Icons.QrCode size={18} className="group-hover:rotate-12 transition-transform" />
+                Show My QR Code
+            </button>
+            {visible && (
+                <div className={`mt-6 p-6 rounded-[2.5rem] shadow-2xl animate-fade-in-up flex flex-col items-center border ${darkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-slate-100'}`}>
+                    <img src={qrUrl} alt="QR Code" className="w-48 h-48 mb-4" />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scan to Save Contact</p>
+                </div>
+            )}
+        </div>
     );
 };
 
-const SocialButton: React.FC<{ 
-  href?: string; 
-  icon: React.FC<any>; 
-  label: string; 
-  color: string;
-  outline?: boolean;
-  className?: string;
-  textColor?: string;
-}> = ({ href, icon: Icon, label, color, outline, className = "", textColor }) => {
+const DynamicSections: React.FC<{ card: CardData, darkMode?: boolean, isVenura?: boolean }> = ({ card, darkMode, isVenura }) => {
+    const order = card.sectionOrder || ['about', 'services', 'gallery', 'hours', 'map'];
+    return (
+        <div className="w-full space-y-6">
+            {order.map(sectionId => {
+                const content = (() => {
+                    switch(sectionId) {
+                        case 'about': return <AboutBlock key="about" card={card} darkMode={darkMode} />;
+                        case 'services': return <ServicesBlock key="services" card={card} darkMode={darkMode} />;
+                        case 'gallery': return <GalleryBlock key="gallery" card={card} darkMode={darkMode} />;
+                        case 'hours': return <HoursBlock key="hours" card={card} darkMode={darkMode} />;
+                        case 'map': return <MapBlock key="map" card={card} darkMode={darkMode} />;
+                        default: return null;
+                    }
+                })();
+
+                if (!content) return null;
+
+                if (isVenura) {
+                    return (
+                        <div key={sectionId} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
+                            {content}
+                        </div>
+                    );
+                }
+                return content;
+            })}
+            <QrCodeSection card={card} darkMode={darkMode} />
+        </div>
+    );
+};
+
+const SocialButton: React.FC<{ href?: string; icon: React.FC<any>; label: string; color: string; outline?: boolean; className?: string; textColor?: string; }> = ({ href, icon: Icon, label, color, outline, className = "", textColor }) => {
   if (!href) return null;
-  
-  const safeHref = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel') 
-    ? href 
-    : `https://${href}`;
-
-  const style = outline 
-    ? { borderColor: color, color: textColor || color } 
-    : { backgroundColor: color, color: textColor || '#fff', borderColor: color };
-
+  const safeHref = href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel') ? href : `https://${href}`;
+  const style = outline ? { borderColor: color, color: textColor || color } : { backgroundColor: color, color: textColor || '#fff', borderColor: color };
   return (
-    <a 
-      href={safeHref} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-95 border-2 ${className}`}
-      style={style}
-    >
+    <a href={safeHref} target="_blank" rel="noopener noreferrer" className={`flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-95 border-2 ${className}`} style={style}>
       <Icon className="w-5 h-5" />
-      <span className="font-medium">{label}</span>
+      <span className="font-bold text-sm tracking-tight">{label}</span>
     </a>
   );
 };
 
-// --- Template 1: Minimal ---
-const MinimalTemplate: React.FC<TemplateProps> = ({ card }) => {
-  const { primaryColor } = card;
-
-  return (
-    <div className="min-h-screen bg-white flex flex-col items-center p-8 text-center max-w-md mx-auto shadow-2xl relative animate-fade-in-up">
-        <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: primaryColor }}></div>
-        
-        {/* Logo */}
-        {card.logoImage && (
-             <div className="absolute top-4 left-4">
-                 <img src={card.logoImage} alt="Logo" className="h-8 object-contain" />
-             </div>
-        )}
-
-        <div className="mt-8 mb-4 relative">
-            <img 
-                src={card.profileImage} 
-                alt={card.fullName} 
-                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-            />
+const SocialGrid: React.FC<{ card: CardData, darkMode?: boolean }> = ({ card, darkMode }) => {
+    return (
+        <div className={`mt-10 mb-6 flex gap-5 flex-wrap justify-center ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+            {card.socials.whatsapp && <a href={`https://wa.me/${card.socials.whatsapp.replace(/\D/g, '')}`} className="hover:text-green-500 transition-all hover:scale-125"><Icons.Whatsapp size={24} /></a>}
+            {card.socials.linkedin && <a href={card.socials.linkedin} className="hover:text-blue-600 transition-all hover:scale-125"><Icons.Linkedin size={24} /></a>}
+            {card.socials.twitter && <a href={card.socials.twitter} className="hover:text-sky-400 transition-all hover:scale-125"><Icons.Twitter size={24} /></a>}
+            {card.socials.instagram && <a href={card.socials.instagram} className="hover:text-pink-500 transition-all hover:scale-125"><Icons.Instagram size={24} /></a>}
+            {card.socials.facebook && <a href={card.socials.facebook} className="hover:text-blue-700 transition-all hover:scale-125"><Icons.Facebook size={24} /></a>}
+            {card.socials.youtube && <a href={card.socials.youtube} className="hover:text-red-600 transition-all hover:scale-125"><Icons.Youtube size={24} /></a>}
         </div>
-        
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">{card.fullName}</h1>
-        <p className="text-sm font-semibold uppercase tracking-wide mb-1" style={{ color: primaryColor }}>{card.jobTitle}</p>
-        <p className="text-gray-500 text-sm mb-6">{card.companyName}</p>
-        
-        <div className="w-16 h-1 mb-6 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+    );
+};
 
-        <p className="text-gray-600 mb-8 leading-relaxed">
-            {card.bio}
-        </p>
+// --- Templates ---
 
-        <div className="w-full space-y-3 mb-8">
-            <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call Me" color={primaryColor} />
-            <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email Me" color={primaryColor} outline />
-            <SocialButton href={card.socials.whatsapp ? `https://wa.me/${card.socials.whatsapp}` : undefined} icon={Icons.MessageCircle} label="WhatsApp" color="#25D366" />
-            <SocialButton href={card.socials.website} icon={Icons.Globe} label="Website" color="#333" outline />
-            <SocialButton href={card.socials.address ? `https://maps.google.com/?q=${card.socials.address}` : undefined} icon={Icons.MapPin} label="Location" color="#333" outline />
+const VenuraTemplate: React.FC<TemplateProps> = ({ card }) => {
+    return (
+        <div className="min-h-screen bg-[#f3f6ff] flex flex-col items-center max-w-md mx-auto shadow-2xl animate-fade-in-up font-sans relative overflow-hidden pb-12">
+            <div className="w-full bg-gradient-to-b from-blue-600 to-blue-800 pt-12 pb-16 px-8 flex flex-col items-center relative overflow-hidden text-center">
+                <div className="absolute top-[-50px] right-[-30px] w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
+                <div className="relative mb-6">
+                    <div className="w-32 h-32 rounded-full border-4 border-white/30 p-1 bg-white/10 shadow-2xl relative">
+                        <img src={card.profileImage} className="w-full h-full rounded-full object-cover border-2 border-white" alt={card.fullName} />
+                        <div className="absolute bottom-1 right-2 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                    </div>
+                </div>
+                <h1 className="text-3xl font-black text-white tracking-tight mb-1">{card.fullName}</h1>
+                <p className="text-white/80 font-bold text-sm mb-3 tracking-wide">{card.jobTitle}</p>
+                <div className="bg-white/20 backdrop-blur-md px-5 py-1.5 rounded-full text-white text-[10px] font-black uppercase tracking-[0.15em] border border-white/20">
+                    {card.companyName}
+                </div>
+            </div>
+
+            <div className="w-full px-4 -mt-10 grid grid-cols-4 gap-2 mb-8">
+                {[
+                    { label: 'CALL', icon: Icons.Phone, color: 'text-blue-600', href: `tel:${card.socials.phone}` },
+                    { label: 'WHATSAPP', icon: Icons.Whatsapp, color: 'text-green-500', href: `https://wa.me/${card.socials.whatsapp?.replace(/\D/g, '')}` },
+                    { label: 'EMAIL', icon: Icons.Mail, color: 'text-red-500', href: `mailto:${card.socials.email}` },
+                    { label: 'SHARE', icon: Icons.Share, color: 'text-purple-500', href: '#' }
+                ].map((act, i) => (
+                    <a key={i} href={act.href} className="bg-white p-3 rounded-[1.5rem] shadow-xl border border-blue-50 transition hover:scale-105 active:scale-95 flex flex-col items-center justify-center gap-2">
+                        <div className={`${act.color}`}><act.icon size={22} /></div>
+                        <span className="text-[8px] font-black text-slate-400 tracking-widest">{act.label}</span>
+                    </a>
+                ))}
+            </div>
+
+            <div className="w-full px-4 space-y-6">
+                <DynamicSections card={card} isVenura />
+                <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-blue-50">
+                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8">CONTACT INFORMATION</h3>
+                    <div className="space-y-6">
+                        {[
+                            { icon: Icons.Phone, label: 'Mobile', value: card.socials.phone, color: 'text-blue-600' },
+                            { icon: Icons.Mail, label: 'Email', value: card.socials.email, color: 'text-blue-600' },
+                            { icon: Icons.Globe, label: 'Website', value: card.socials.website, color: 'text-blue-600' },
+                            { icon: Icons.MapPin, label: 'Address', value: card.socials.address, color: 'text-blue-600' }
+                        ].map((info, i) => info.value && (
+                            <div key={i} className="flex items-start gap-5">
+                                <div className={`${info.color} mt-1`}><info.icon size={18} /></div>
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">{info.label}</div>
+                                    <div className="text-sm font-black text-slate-800 break-all">{info.value}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <SocialGrid card={card} />
+            </div>
         </div>
-        
+    );
+};
+
+const MinimalTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-white flex flex-col items-center p-8 text-center max-w-md mx-auto relative animate-fade-in-up">
+        <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: card.primaryColor }}></div>
+        <img src={card.profileImage} className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-2xl mt-10" alt={card.fullName} />
+        <h1 className="text-3xl font-black text-gray-900 mt-6 mb-1 tracking-tight">{card.fullName}</h1>
+        <p className="text-xs font-black uppercase tracking-[0.2em] mb-2" style={{ color: card.primaryColor }}>{card.jobTitle}</p>
+        <p className="text-gray-400 text-xs mb-8 font-medium">{card.companyName}</p>
+        <div className="w-full space-y-3 mb-10 px-2">
+            <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call Now" color={card.primaryColor} />
+            <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email Me" color={card.primaryColor} outline />
+        </div>
         <DynamicSections card={card} />
-
-        <div className="flex justify-center gap-4 mt-8 flex-wrap">
-            {card.socials.linkedin && <a href={card.socials.linkedin} className="text-gray-400 hover:text-[#0077b5] transition-transform duration-300 hover:scale-125"><Icons.Linkedin /></a>}
-            {card.socials.twitter && <a href={card.socials.twitter} className="text-gray-400 hover:text-[#1DA1F2] transition-transform duration-300 hover:scale-125"><Icons.Twitter /></a>}
-            {card.socials.instagram && <a href={card.socials.instagram} className="text-gray-400 hover:text-[#E1306C] transition-transform duration-300 hover:scale-125"><Icons.Instagram /></a>}
-            {card.socials.facebook && <a href={card.socials.facebook} className="text-gray-400 hover:text-[#1877F2] transition-transform duration-300 hover:scale-125"><Icons.Facebook /></a>}
-            {card.socials.youtube && <a href={card.socials.youtube} className="text-gray-400 hover:text-[#FF0000] transition-transform duration-300 hover:scale-125"><Icons.Youtube /></a>}
-        </div>
+        <SocialGrid card={card} />
     </div>
-  );
-};
+);
 
-// --- Template 2: Modern ---
-const ModernTemplate: React.FC<TemplateProps> = ({ card }) => {
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden animate-fade-in-up">
-        {/* Banner */}
-        <div className="h-40 bg-cover bg-center relative" style={{ backgroundImage: `url(${card.bannerImage})` }}>
-           <div className="w-full h-full bg-black/30 backdrop-blur-[2px]"></div>
-           {card.logoImage && (
-               <div className="absolute top-4 right-4 bg-white/90 p-1.5 rounded-lg shadow-sm">
-                   <img src={card.logoImage} className="h-8 object-contain" alt="Logo"/>
-               </div>
-           )}
-        </div>
-
-        <div className="px-6 relative -mt-16 text-center">
-            <img 
-                src={card.profileImage} 
-                alt={card.fullName} 
-                className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-xl mx-auto"
-            />
-            <h1 className="text-2xl font-bold text-gray-900 mt-4">{card.fullName}</h1>
-            <p className="text-gray-600 font-medium">{card.jobTitle} @ {card.companyName}</p>
-        </div>
-
-        <div className="p-6">
-            <div className="bg-white p-4 rounded-xl shadow-sm mb-6 border border-gray-100">
-                <p className="text-gray-600 text-center text-sm italic">"{card.bio}"</p>
+const ElegantTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center p-12 max-w-md mx-auto text-center animate-fade-in-up font-serif">
+        <div className="w-full border border-gray-100 p-8 bg-white shadow-sm flex flex-col items-center rounded-sm">
+            <img src={card.profileImage} className="w-28 h-28 rounded-full object-cover mb-8 grayscale shadow-inner" alt={card.fullName} />
+            <h1 className="text-2xl text-gray-900 tracking-widest mb-2 italic lowercase font-light">{card.fullName}</h1>
+            <div className="h-px w-16 bg-gray-200 mb-4"></div>
+            <p className="text-[10px] uppercase tracking-[0.4em] text-gray-400 mb-10">{card.jobTitle}</p>
+            <div className="w-full space-y-4 mb-10">
+                <SocialButton href={`tel:${card.socials.phone}`} icon={Icons.Phone} label="CONSULTATION" color="#333" className="rounded-none border-none tracking-widest" />
+                <SocialButton href={`mailto:${card.socials.email}`} icon={Icons.Mail} label="PRIVATE MESSAGE" color="transparent" outline textColor="#333" className="rounded-none tracking-widest" />
             </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
-                 <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call" color={card.primaryColor} />
-                 <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email" color={card.primaryColor} />
-            </div>
-
-            <div className="space-y-3 mb-8">
-                 <SocialButton href={card.socials.whatsapp ? `https://wa.me/${card.socials.whatsapp}` : undefined} icon={Icons.MessageCircle} label="Chat on WhatsApp" color="#25D366" />
-                 <SocialButton href={card.socials.website} icon={Icons.Globe} label="Visit Website" color="#333" outline />
-                 <SocialButton href={card.socials.address ? `https://maps.google.com/?q=${card.socials.address}` : undefined} icon={Icons.MapPin} label="Find Us" color="#333" outline />
-            </div>
-            
             <DynamicSections card={card} />
-            
-            <div className="flex justify-center gap-6 mt-8 pb-8 border-t pt-6 flex-wrap">
-                {card.socials.linkedin && <a href={card.socials.linkedin} className="p-2 bg-white shadow rounded-full text-gray-600 hover:text-[#0077b5] transition-transform duration-300 hover:scale-125"><Icons.Linkedin /></a>}
-                {card.socials.twitter && <a href={card.socials.twitter} className="p-2 bg-white shadow rounded-full text-gray-600 hover:text-[#1DA1F2] transition-transform duration-300 hover:scale-125"><Icons.Twitter /></a>}
-                {card.socials.instagram && <a href={card.socials.instagram} className="p-2 bg-white shadow rounded-full text-gray-600 hover:text-[#E1306C] transition-transform duration-300 hover:scale-125"><Icons.Instagram /></a>}
-                {card.socials.facebook && <a href={card.socials.facebook} className="p-2 bg-white shadow rounded-full text-gray-600 hover:text-[#1877F2] transition-transform duration-300 hover:scale-125"><Icons.Facebook /></a>}
-                {card.socials.youtube && <a href={card.socials.youtube} className="p-2 bg-white shadow rounded-full text-gray-600 hover:text-red-600 transition-transform duration-300 hover:scale-125"><Icons.Youtube /></a>}
-            </div>
+            <SocialGrid card={card} />
         </div>
     </div>
-  );
-};
+);
 
-// --- Template 3: Dark Mode ---
-const DarkTemplate: React.FC<TemplateProps> = ({ card }) => {
-    const { primaryColor } = card;
-    return (
-        <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-8 max-w-md mx-auto shadow-2xl relative animate-fade-in-up">
-            <div className="w-full flex justify-between items-center mb-10">
-                 {card.logoImage ? (
-                    <img src={card.logoImage} alt="Logo" className="h-6 object-contain grayscale brightness-200" />
-                 ) : (
-                    <div className="text-xs font-mono text-gray-400 tracking-widest uppercase">Digital Card</div>
-                 )}
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
+const TechTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-black text-[#00ff00] font-mono p-8 max-w-md mx-auto animate-fade-in-up border border-[#00ff00]/20">
+        <div className="mb-10 text-[10px] opacity-40 flex justify-between">
+            <span>[LOGIN: GRANTED]</span>
+            <span>V2.4.0</span>
+        </div>
+        <div className="flex gap-6 mb-12 border-l-4 border-[#00ff00] pl-6 py-2">
+            <div>
+                <h1 className="text-2xl font-black uppercase tracking-widest italic">{card.fullName}</h1>
+                <p className="text-xs opacity-70 underline">/{card.jobTitle}</p>
             </div>
+        </div>
+        <div className="space-y-6 mb-12">
+            <SocialButton href={`tel:${card.socials.phone}`} icon={Icons.Phone} label="PROTO:TEL" color="#00ff00" textColor="black" className="rounded-none border-none" />
+            <SocialButton href={`mailto:${card.socials.email}`} icon={Icons.Mail} label="PROTO:MAIL" color="transparent" outline textColor="#00ff00" className="rounded-none" />
+        </div>
+        <DynamicSections card={card} darkMode />
+        <SocialGrid card={card} darkMode />
+    </div>
+);
 
-            <div className="relative mb-6 group">
-                <div className="absolute -inset-1 rounded-full blur opacity-40 transition duration-500 group-hover:opacity-75" style={{ backgroundColor: primaryColor }}></div>
-                <img 
-                    src={card.profileImage} 
-                    alt={card.fullName} 
-                    className="relative w-28 h-28 rounded-full object-cover ring-2 ring-gray-800"
-                />
+const CreativeTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-purple-50 p-6 max-w-md mx-auto animate-fade-in-up">
+        <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-purple-100 flex flex-col items-center text-center">
+            <div className="relative mb-8">
+                <div className="absolute inset-0 bg-purple-200 rounded-[2.5rem] rotate-6 scale-105"></div>
+                <img src={card.profileImage} className="relative w-32 h-32 rounded-[2.5rem] object-cover shadow-lg" alt={card.fullName} />
             </div>
-
-            <h1 className="text-3xl font-bold mb-1 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                {card.fullName}
-            </h1>
-            <p className="text-gray-400 mb-6">{card.jobTitle} | {card.companyName}</p>
-
-            <div className="w-full space-y-4 mb-8">
-                 <a href={card.socials.phone ? `tel:${card.socials.phone}` : '#'} className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                    <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                        <Icons.Phone size={20} />
-                    </div>
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-500 uppercase">Phone</div>
-                        <div className="font-medium">{card.socials.phone || 'N/A'}</div>
-                    </div>
-                 </a>
-                 
-                 <a href={card.socials.email ? `mailto:${card.socials.email}` : '#'} className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                    <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                        <Icons.Mail size={20} />
-                    </div>
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-500 uppercase">Email</div>
-                        <div className="font-medium truncate">{card.socials.email || 'N/A'}</div>
-                    </div>
-                 </a>
-
-                 {card.socials.whatsapp && (
-                    <a href={`https://wa.me/${card.socials.whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                        <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                            <Icons.Whatsapp size={20} />
-                        </div>
-                        <div className="flex-1">
-                            <div className="text-xs text-gray-500 uppercase">WhatsApp</div>
-                            <div className="font-medium">{card.socials.whatsapp}</div>
-                        </div>
-                    </a>
-                 )}
-                 
-                 <a href={card.socials.website ?? '#'} className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                    <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                        <Icons.Globe size={20} />
-                    </div>
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-500 uppercase">Website</div>
-                        <div className="font-medium truncate">{card.socials.website || 'N/A'}</div>
-                    </div>
-                 </a>
-
-                 {card.socials.facebook && (
-                    <a href={card.socials.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                        <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                            <Icons.Facebook size={20} />
-                        </div>
-                        <div className="flex-1">
-                            <div className="text-xs text-gray-500 uppercase">Facebook</div>
-                            <div className="font-medium truncate">{card.socials.facebook}</div>
-                        </div>
-                    </a>
-                 )}
-
-                 {card.socials.youtube && (
-                    <a href={card.socials.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                        <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                            <Icons.Youtube size={20} />
-                        </div>
-                        <div className="flex-1">
-                            <div className="text-xs text-gray-500 uppercase">YouTube</div>
-                            <div className="font-medium truncate">{card.socials.youtube}</div>
-                        </div>
-                    </a>
-                 )}
-
-                 {card.socials.address && (
-                    <a href={`https://maps.google.com/?q=${card.socials.address}`} target="_blank" className="flex items-center p-4 bg-gray-800 rounded-lg hover:bg-gray-750 border border-gray-700 transition-all duration-300 hover:scale-[1.02] hover:border-gray-500">
-                        <div className="p-2 rounded-md mr-4 bg-gray-700 text-white">
-                            <Icons.MapPin size={20} />
-                        </div>
-                        <div className="flex-1">
-                            <div className="text-xs text-gray-500 uppercase">Location</div>
-                            <div className="font-medium truncate">{card.socials.address}</div>
-                        </div>
-                    </a>
-                 )}
+            <h1 className="text-4xl font-black text-slate-900 tracking-tighter mb-1 leading-none">{card.fullName}</h1>
+            <p className="text-purple-600 font-black uppercase text-[10px] tracking-[0.3em] mb-10">{card.jobTitle}</p>
+            <div className="w-full space-y-4 mb-10">
+                <SocialButton href={`tel:${card.socials.phone}`} icon={Icons.Phone} label="Let's Chat" color="#8b5cf6" className="rounded-full shadow-lg shadow-purple-200" />
+                <SocialButton href={`mailto:${card.socials.email}`} icon={Icons.Mail} label="Collaboration" color="white" outline textColor="#8b5cf6" className="rounded-full border-purple-200" />
             </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
 
+const LuxeTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#0a0a0a] text-[#c9a66b] flex flex-col p-10 max-w-md mx-auto shadow-2xl animate-fade-in-up font-serif border-x border-[#c9a66b]/20">
+        <div className="flex flex-col items-center text-center">
+            <div className="relative mb-12">
+                <div className="absolute inset-0 border border-[#c9a66b] rounded-full scale-110 opacity-30"></div>
+                <img src={card.profileImage} className="w-32 h-32 rounded-full object-cover grayscale" alt={card.fullName} />
+            </div>
+            <h1 className="text-4xl font-light tracking-[0.3em] uppercase mb-4 leading-none">{card.fullName}</h1>
+            <p className="text-[10px] tracking-[0.5em] text-white/40 uppercase mb-12">{card.jobTitle} • {card.companyName}</p>
+            <div className="h-px w-24 bg-[#c9a66b]/40 mb-12"></div>
+            <div className="w-full space-y-6 mb-12">
+                 <a href={`tel:${card.socials.phone}`} className="block text-[#c9a66b] tracking-[0.4em] text-xs uppercase hover:text-white transition">PREMIER CALL</a>
+                 <a href={`mailto:${card.socials.email}`} className="block text-[#c9a66b] tracking-[0.4em] text-xs uppercase hover:text-white transition">INQUIRY MAIL</a>
+            </div>
             <DynamicSections card={card} darkMode />
+            <SocialGrid card={card} darkMode />
+        </div>
+    </div>
+);
 
-            <div className="mt-8 flex gap-6 flex-wrap justify-center">
-                {card.socials.whatsapp && <a href={`https://wa.me/${card.socials.whatsapp}`} className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-125"><Icons.Whatsapp /></a>}
-                {card.socials.linkedin && <a href={card.socials.linkedin} className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-125"><Icons.Linkedin /></a>}
-                {card.socials.twitter && <a href={card.socials.twitter} className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-125"><Icons.Twitter /></a>}
-                {card.socials.instagram && <a href={card.socials.instagram} className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-125"><Icons.Instagram /></a>}
-                {card.socials.facebook && <a href={card.socials.facebook} className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-125"><Icons.Facebook /></a>}
-                {card.socials.youtube && <a href={card.socials.youtube} className="text-gray-500 hover:text-white transition-all duration-300 hover:scale-125"><Icons.Youtube /></a>}
-            </div>
-
-            <div className="mt-auto pt-10 text-center opacity-30 text-xs">
-                <p>Saved to contacts</p>
+const CyberpunkTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-black text-[#f3f300] font-mono p-6 max-w-md mx-auto border-4 border-[#f3f300] animate-fade-in-up relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff00ff] opacity-10 blur-[100px]"></div>
+        <div className="border-2 border-[#ff00ff] p-4 mb-10 flex gap-4 bg-[#ff00ff]/10">
+            <img src={card.profileImage} className="w-20 h-20 border-2 border-[#f3f300] grayscale contrast-150" alt={card.fullName} />
+            <div>
+                <h1 className="text-xl font-black uppercase italic tracking-tighter">DATA: {card.fullName}</h1>
+                <p className="text-[10px] text-[#00ffff] font-bold">LVL: PRO_ACCESS</p>
+                <p className="text-[10px] opacity-70 mt-2">{card.jobTitle}</p>
             </div>
         </div>
-    );
-};
-
-// --- Template 4: Professional ---
-const ProfessionalTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen bg-gray-100 flex flex-col max-w-md mx-auto shadow-xl animate-fade-in-up">
-            <div className="bg-white p-6 shadow-sm flex items-center gap-4 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 transform translate-x-12 -translate-y-12 rotate-45 opacity-10" style={{backgroundColor: card.primaryColor}}></div>
-                <img src={card.profileImage} className="w-20 h-20 rounded-lg object-cover shadow-sm" alt="Profile" />
-                <div className="flex-1 z-10">
-                    <div className="flex justify-between items-start">
-                        <h1 className="text-xl font-bold text-gray-800">{card.fullName}</h1>
-                        {card.logoImage && <img src={card.logoImage} className="h-8 w-8 object-contain ml-2" alt="Logo" />}
-                    </div>
-                    <p className="text-sm font-medium" style={{color: card.primaryColor}}>{card.jobTitle}</p>
-                    <p className="text-xs text-gray-500">{card.companyName}</p>
-                </div>
-            </div>
-
-            <div className="p-6 space-y-6 flex-1 bg-gray-50">
-                <div className="bg-white p-4 rounded-lg shadow-sm border-l-4" style={{borderLeftColor: card.primaryColor}}>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">About</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">{card.bio}</p>
-                </div>
-
-                <div>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase mb-3 ml-1">Contact</h3>
-                    <div className="space-y-2">
-                        <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Mobile" color="white" textColor="#333" outline className="bg-white hover:bg-gray-50 !border-gray-200" />
-                        <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email" color="white" textColor="#333" outline className="bg-white hover:bg-gray-50 !border-gray-200" />
-                        <SocialButton href={card.socials.website} icon={Icons.Globe} label="Website" color="white" textColor="#333" outline className="bg-white hover:bg-gray-50 !border-gray-200" />
-                        {card.socials.address && <SocialButton href={`https://maps.google.com/?q=${card.socials.address}`} icon={Icons.MapPin} label="Office" color="white" textColor="#333" outline className="bg-white hover:bg-gray-50 !border-gray-200" />}
-                    </div>
-                </div>
-
-                <DynamicSections card={card} />
-
-                <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                    {card.socials.linkedin && <a href={card.socials.linkedin} className="text-gray-400 hover:text-[#0077b5] transition-transform duration-300 hover:scale-125"><Icons.Linkedin size={24}/></a>}
-                    {card.socials.twitter && <a href={card.socials.twitter} className="text-gray-400 hover:text-[#1DA1F2] transition-transform duration-300 hover:scale-125"><Icons.Twitter size={24}/></a>}
-                    {card.socials.instagram && <a href={card.socials.instagram} className="text-gray-400 hover:text-[#E1306C] transition-transform duration-300 hover:scale-125"><Icons.Instagram size={24}/></a>}
-                    {card.socials.facebook && <a href={card.socials.facebook} className="text-gray-400 hover:text-[#1877F2] transition-transform duration-300 hover:scale-125"><Icons.Facebook size={24}/></a>}
-                </div>
-            </div>
-            
-            <div className="bg-gray-800 text-white text-center py-3 text-xs">
-                Connect with me
-            </div>
+        <div className="bg-[#f3f300] text-black px-2 py-1 font-black mb-6 skew-x-[-15deg] inline-block uppercase text-xs">Terminal://Active</div>
+        <div className="space-y-4 mb-12">
+            <a href={`tel:${card.socials.phone}`} className="block border-2 border-[#00ffff] p-4 text-center font-bold hover:bg-[#00ffff] hover:text-black transition uppercase tracking-widest">Connect_Voice</a>
+            <a href={`mailto:${card.socials.email}`} className="block border-2 border-[#ff00ff] p-4 text-center font-bold hover:bg-[#ff00ff] hover:text-black transition uppercase tracking-widest">Direct_Comms</a>
         </div>
-    );
-};
+        <DynamicSections card={card} darkMode />
+        <SocialGrid card={card} darkMode />
+    </div>
+);
 
-// --- Template 5: Creative ---
-const CreativeTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen bg-white max-w-md mx-auto shadow-2xl overflow-hidden relative animate-fade-in-up">
-            {/* Abstract Shapes */}
-            <div className="absolute top-[-20%] right-[-20%] w-[80%] h-[50%] rounded-full opacity-20 blur-3xl" style={{backgroundColor: card.primaryColor}}></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[40%] rounded-full bg-purple-200 opacity-40 blur-3xl"></div>
-
-            <div className="relative z-10 p-8 flex flex-col h-full">
-                <div className="mb-8 relative">
-                    {card.logoImage && <img src={card.logoImage} className="absolute top-0 right-0 h-10 w-10 object-contain" alt="Logo" />}
-                    <img src={card.profileImage} className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl mb-4" />
-                    <h1 className="text-4xl font-black text-gray-900 leading-tight mb-2">{card.fullName}</h1>
-                    <div className="inline-block px-3 py-1 rounded-full text-sm font-bold text-white shadow-md" style={{backgroundColor: card.primaryColor}}>
-                        {card.jobTitle}
-                    </div>
-                </div>
-
-                <div className="flex-1 space-y-6">
-                    <p className="text-lg text-gray-600 font-light italic border-l-4 pl-4 border-gray-200">
-                        {card.bio}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call" color={card.primaryColor} />
-                        <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email" color="#333" />
-                    </div>
-                    
-                    <div className="space-y-3">
-                         <SocialButton href={card.socials.whatsapp ? `https://wa.me/${card.socials.whatsapp}` : undefined} icon={Icons.MessageCircle} label="WhatsApp" color="#25D366" outline />
-                         <SocialButton href={card.socials.website} icon={Icons.Globe} label="Visit Website" color="#333" outline />
-                    </div>
-
-                    <DynamicSections card={card} />
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-100 flex gap-4 overflow-x-auto pb-2">
-                     {/* Horizontal Scroll Socials */}
-                    {Object.entries(card.socials).map(([key, value]) => {
-                        if (!['linkedin','twitter','instagram','facebook','youtube'].includes(key) || !value) return null;
-                        return (
-                            <a key={key} href={value} className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-all duration-300 hover:scale-110">
-                                {key === 'linkedin' && <Icons.Linkedin size={18}/>}
-                                {key === 'twitter' && <Icons.Twitter size={18}/>}
-                                {key === 'instagram' && <Icons.Instagram size={18}/>}
-                                {key === 'facebook' && <Icons.Facebook size={18}/>}
-                                {key === 'youtube' && <Icons.Youtube size={18}/>}
-                            </a>
-                        );
-                    })}
-                </div>
-            </div>
+const TerminalTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#050505] text-[#00ff00] font-mono p-10 max-w-md mx-auto border border-[#00ff00]/10 animate-fade-in-up">
+        <div className="mb-12 text-[10px] opacity-40 leading-none">
+            [ACCESS_LOG: PRO_USER_${card.fullName.toUpperCase().replace(/\s/g, '_')}]<br/>
+            [STRIKE: GRANTED_SUCCESS]
         </div>
-    );
-};
-
-// --- Template 6: Elegant ---
-const ElegantTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center justify-center p-8 max-w-md mx-auto shadow-2xl border-x-8 border-white animate-fade-in-up">
-            <div className="w-full border border-gray-200 p-8 bg-white shadow-sm text-center relative">
-                {card.logoImage && <img src={card.logoImage} className="absolute top-4 left-4 h-6 w-auto object-contain opacity-50" alt="Logo" />}
-                
-                <img src={card.profileImage} className="w-24 h-24 rounded-full mx-auto mb-6 grayscale object-cover" />
-                <h1 className="text-2xl font-serif text-gray-900 tracking-wide mb-2">{card.fullName}</h1>
-                <div className="h-px w-12 bg-gray-300 mx-auto mb-4"></div>
-                <p className="text-xs uppercase tracking-widest text-gray-500 mb-6">{card.jobTitle}</p>
-                
-                <p className="font-serif text-gray-600 italic mb-8 text-sm">
-                    "{card.bio}"
-                </p>
-
-                <div className="space-y-3 font-serif mb-8">
-                    <a href={card.socials.phone ? `tel:${card.socials.phone}` : '#'} className="block text-gray-800 hover:text-black border-b border-gray-100 pb-2 transition-all duration-300 hover:pl-2">
-                        {card.socials.phone || 'Phone Number'}
-                    </a>
-                    <a href={card.socials.email ? `mailto:${card.socials.email}` : '#'} className="block text-gray-800 hover:text-black border-b border-gray-100 pb-2 transition-all duration-300 hover:pl-2">
-                        {card.socials.email || 'Email Address'}
-                    </a>
-                    <a href={card.socials.website || '#'} className="block text-gray-800 hover:text-black border-b border-gray-100 pb-2 transition-all duration-300 hover:pl-2">
-                        {card.socials.website?.replace(/^https?:\/\//, '') || 'Website'}
-                    </a>
-                </div>
-
-                <DynamicSections card={card} />
-
-                <div className="mt-8 flex justify-center gap-4 text-gray-400">
-                    {card.socials.linkedin && <a href={card.socials.linkedin} className="hover:text-gray-900 transition-transform duration-300 hover:scale-125"><Icons.Linkedin /></a>}
-                    {card.socials.twitter && <a href={card.socials.twitter} className="hover:text-gray-900 transition-transform duration-300 hover:scale-125"><Icons.Twitter /></a>}
-                    {card.socials.instagram && <a href={card.socials.instagram} className="hover:text-gray-900 transition-transform duration-300 hover:scale-125"><Icons.Instagram /></a>}
-                </div>
-            </div>
+        <div className="mb-16 border-l-2 border-[#00ff00] pl-8 py-3">
+            <h1 className="text-3xl font-black mb-2 tracking-widest italic">{card.fullName}</h1>
+            <p className="text-xs opacity-60 uppercase underline tracking-tighter">[{card.jobTitle}]</p>
         </div>
-    );
-};
-
-// --- Template 7: Tech ---
-const TechTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen bg-black text-green-500 font-mono p-4 max-w-md mx-auto shadow-2xl flex flex-col animate-fade-in-up">
-            <div className="border border-green-500/50 p-6 flex-1 relative bg-gray-900/50">
-                {/* Decoration Lines */}
-                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-green-500"></div>
-                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-green-500"></div>
-                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-green-500"></div>
-                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-green-500"></div>
-
-                <div className="flex items-start gap-4 mb-8">
-                     <img src={card.profileImage} className="w-16 h-16 rounded border border-green-500/50 grayscale object-cover" />
-                     <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                             <h1 className="text-lg font-bold typing-effect"> {'>'} {card.fullName}</h1>
-                             {card.logoImage && <img src={card.logoImage} className="h-6 w-6 object-contain grayscale opacity-70" alt="Logo" />}
-                        </div>
-                        <p className="text-xs opacity-70 mt-1"> // {card.jobTitle}</p>
-                        <p className="text-xs opacity-70"> // {card.companyName}</p>
-                     </div>
-                </div>
-
-                <div className="mb-8 border-l-2 border-green-500/30 pl-3">
-                    <p className="text-sm opacity-90 leading-relaxed">{card.bio}</p>
-                </div>
-
-                <div className="space-y-4 mb-8">
-                    <div className="text-xs uppercase opacity-50 border-b border-green-500/20 pb-1">Connection Protocols</div>
-                    
-                    <a href={card.socials.phone ? `tel:${card.socials.phone}` : '#'} className="flex items-center gap-3 hover:bg-green-500/10 p-2 -mx-2 transition-all duration-300 hover:translate-x-2">
-                        <Icons.Phone size={16}/> <span className="text-sm">{card.socials.phone || 'N/A'}</span>
-                    </a>
-                    <a href={card.socials.email ? `mailto:${card.socials.email}` : '#'} className="flex items-center gap-3 hover:bg-green-500/10 p-2 -mx-2 transition-all duration-300 hover:translate-x-2">
-                        <Icons.Mail size={16}/> <span className="text-sm truncate">{card.socials.email || 'N/A'}</span>
-                    </a>
-                    <a href={card.socials.website || '#'} className="flex items-center gap-3 hover:bg-green-500/10 p-2 -mx-2 transition-all duration-300 hover:translate-x-2">
-                        <Icons.Globe size={16}/> <span className="text-sm truncate">{card.socials.website || 'N/A'}</span>
-                    </a>
-                </div>
-
-                <DynamicSections card={card} darkMode />
-
-                <div className="mt-8 pt-4 border-t border-green-500/20 flex gap-4">
-                    {card.socials.linkedin && <a href={card.socials.linkedin} className="hover:text-white transition-transform duration-300 hover:scale-125"><Icons.Linkedin size={18}/></a>}
-                    {card.socials.twitter && <a href={card.socials.twitter} className="hover:text-white transition-transform duration-300 hover:scale-125"><Icons.Twitter size={18}/></a>}
-                    {card.socials.instagram && <a href={card.socials.instagram} className="hover:text-white transition-transform duration-300 hover:scale-125"><Icons.Instagram size={18}/></a>}
-                </div>
-
-                 <div className="absolute bottom-2 right-2 text-[10px] opacity-40">SYS.READY</div>
-            </div>
+        <div className="space-y-8 mb-16">
+            <a href={`tel:${card.socials.phone}`} className="flex items-center gap-6 hover:bg-[#00ff00]/10 p-4 -ml-4 transition-all">
+                <span className="bg-[#00ff00] text-black px-2 py-0.5 font-black text-[10px]">CMD:CALL</span>
+                <span className="text-sm font-bold">{card.socials.phone}</span>
+            </a>
+            <a href={`mailto:${card.socials.email}`} className="flex items-center gap-6 hover:bg-[#00ff00]/10 p-4 -ml-4 transition-all">
+                <span className="bg-[#00ff00] text-black px-2 py-0.5 font-black text-[10px]">CMD:MAIL</span>
+                <span className="text-sm font-bold truncate">{card.socials.email}</span>
+            </a>
         </div>
-    );
-};
+        <DynamicSections card={card} darkMode />
+        <SocialGrid card={card} darkMode />
+    </div>
+);
 
-// --- Template 8: Gradient ---
-const GradientTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen flex items-center justify-center p-6 max-w-md mx-auto shadow-2xl relative overflow-hidden animate-fade-in-up" 
-             style={{background: `linear-gradient(135deg, ${card.primaryColor}, #1a1a1a)`}}>
-            
-            <div className="bg-white/95 backdrop-blur rounded-3xl p-8 w-full shadow-2xl text-center relative z-10">
-                {card.logoImage && (
-                    <div className="absolute top-4 left-4 opacity-50">
-                        <img src={card.logoImage} className="h-6 w-auto object-contain" alt="Logo" />
-                    </div>
-                )}
-                
-                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2">
-                    <img src={card.profileImage} className="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover" />
-                </div>
-                
-                <div className="mt-12">
-                    <h1 className="text-2xl font-bold text-gray-800">{card.fullName}</h1>
-                    <p className="text-sm text-purple-600 font-medium mb-4">{card.jobTitle}</p>
-                    <p className="text-gray-600 text-sm mb-8">{card.bio}</p>
-                    
-                    <div className="space-y-3 mb-8">
-                         <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call" color={card.primaryColor} />
-                         <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email" color={card.primaryColor} outline />
-                         <SocialButton href={card.socials.website} icon={Icons.Globe} label="Website" color="#333" outline />
-                    </div>
+const GlassTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-cover bg-center flex items-center justify-center p-6 max-w-md mx-auto shadow-2xl animate-fade-in-up" style={{backgroundImage: `url(${card.bannerImage || 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=800'})`}}>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-10 rounded-[3rem] w-full text-center relative shadow-2xl overflow-y-auto no-scrollbar max-h-[90vh]">
+            <img src={card.profileImage} className="w-24 h-24 rounded-full mx-auto border-2 border-white/30 object-cover mb-6 shadow-2xl" alt={card.fullName} />
+            <h1 className="text-3xl font-black text-white mb-1 shadow-sm">{card.fullName}</h1>
+            <p className="text-white/70 font-bold uppercase text-[10px] tracking-widest mb-10">{card.jobTitle}</p>
+            <div className="w-full space-y-4 mb-10 text-white">
+                <a href={`tel:${card.socials.phone}`} className="flex items-center justify-center gap-3 bg-white/10 py-4 rounded-2xl hover:bg-white/20 transition backdrop-blur-md">
+                    <Icons.Phone /> <span className="font-bold text-sm tracking-widest uppercase">CALL</span>
+                </a>
+                <a href={`mailto:${card.socials.email}`} className="flex items-center justify-center gap-3 bg-white/10 py-4 rounded-2xl hover:bg-white/20 transition backdrop-blur-md">
+                    <Icons.Mail /> <span className="font-bold text-sm tracking-widest uppercase">MAIL</span>
+                </a>
+            </div>
+            <DynamicSections card={card} darkMode />
+            <SocialGrid card={card} darkMode />
+        </div>
+    </div>
+);
 
-                    <DynamicSections card={card} />
+const PlayfulTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-yellow-50 p-6 flex flex-col max-w-md mx-auto animate-fade-in-up font-sans">
+        <div className="bg-white border-4 border-black rounded-[2.5rem] p-10 flex-1 flex flex-col items-center text-center shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+            <div className="w-32 h-32 rounded-full border-4 border-black mb-6 overflow-hidden bg-yellow-400">
+                <img src={card.profileImage} className="w-full h-full object-cover" alt={card.fullName} />
+            </div>
+            <h1 className="text-4xl font-black text-black mb-1 tracking-tighter uppercase leading-none">{card.fullName}</h1>
+            <div className="bg-black text-white px-5 py-1 text-xs font-black uppercase mb-10 transform -rotate-2">{card.jobTitle}</div>
+            <div className="w-full space-y-5 mb-10">
+                <a href={`tel:${card.socials.phone}`} className="block bg-[#FF90E8] border-4 border-black py-4 rounded-2xl font-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all uppercase text-xs tracking-widest">CALL NOW!</a>
+                <a href={`mailto:${card.socials.email}`} className="block bg-[#23A094] border-4 border-black py-4 rounded-2xl font-black text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all uppercase text-xs tracking-widest">SEND EMAIL</a>
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
 
-                    <div className="mt-8 flex justify-center gap-4">
-                         {card.socials.linkedin && <a href={card.socials.linkedin} className="text-gray-400 hover:text-gray-800 transition-transform duration-300 hover:scale-125"><Icons.Linkedin /></a>}
-                         {card.socials.instagram && <a href={card.socials.instagram} className="text-gray-400 hover:text-gray-800 transition-transform duration-300 hover:scale-125"><Icons.Instagram /></a>}
-                         {card.socials.twitter && <a href={card.socials.twitter} className="text-gray-400 hover:text-gray-800 transition-transform duration-300 hover:scale-125"><Icons.Twitter /></a>}
-                    </div>
+const MonochromeTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-white text-black p-10 flex flex-col max-w-md mx-auto animate-fade-in-up font-sans border-[10px] border-black">
+        <div className="p-4 flex-1 flex flex-col items-center">
+            <img src={card.profileImage} className="w-32 h-32 object-cover border-4 border-black mb-8 grayscale" alt={card.fullName} />
+            <h1 className="text-4xl font-black uppercase mb-1 tracking-tighter leading-none text-center">{card.fullName}</h1>
+            <p className="text-xs font-black bg-black text-white px-4 py-1 mb-12 self-center">{card.jobTitle}</p>
+            <div className="w-full space-y-5 mb-12">
+                <a href={`tel:${card.socials.phone}`} className="block border-4 border-black py-4 rounded-none font-black text-center uppercase tracking-widest hover:bg-black hover:text-white transition-all">CALL USER</a>
+                <a href={`mailto:${card.socials.email}`} className="block border-4 border-black py-4 rounded-none font-black text-center uppercase tracking-widest hover:bg-black hover:text-white transition-all">SEND EMAIL</a>
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
+
+const SoftUITemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#e0e5ec] p-10 max-w-md mx-auto animate-fade-in-up font-sans">
+        <div className="shadow-[9px_9px_16px_rgba(163,177,198,0.6),-9px_-9px_16px_rgba(255,255,255,0.5)] rounded-[3rem] p-10 flex flex-col items-center">
+            <img src={card.profileImage} className="w-32 h-32 rounded-full object-cover border-8 border-[#e0e5ec] shadow-[inset_6px_6px_12px_rgba(163,177,198,0.6),inset_-6px_-6px_12px_rgba(255,255,255,0.5)] mb-8" alt={card.fullName} />
+            <h1 className="text-3xl font-black text-slate-700 mb-2 leading-none text-center">{card.fullName}</h1>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">{card.jobTitle}</p>
+            <div className="w-full space-y-6 mb-12">
+                <SocialButton href={`tel:${card.socials.phone}`} icon={Icons.Phone} label="Call" color="#e0e5ec" textColor="#4a5568" className="shadow-[6px_6px_12px_rgba(163,177,198,0.6),-6px_-6px_12px_rgba(255,255,255,0.5)] border-none hover:shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.5)]" />
+                <SocialButton href={`mailto:${card.socials.email}`} icon={Icons.Mail} label="Email" color="#e0e5ec" textColor="#4a5568" className="shadow-[6px_6px_12px_rgba(163,177,198,0.6),-6px_-6px_12px_rgba(255,255,255,0.5)] border-none hover:shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.5)]" />
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
+
+const RetroTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#ff7b54] p-8 flex flex-col max-w-md mx-auto animate-fade-in-up font-mono">
+        <div className="bg-[#ffffd2] border-4 border-[#111] p-10 flex-1 flex flex-col items-center text-center shadow-[12px_12px_0px_0px_rgba(17,17,17,1)]">
+            <img src={card.profileImage} className="w-32 h-32 rounded-none border-4 border-[#111] mb-8 object-cover" alt={card.fullName} />
+            <h1 className="text-3xl font-black text-[#111] uppercase mb-2 tracking-tighter leading-none">{card.fullName}</h1>
+            <div className="bg-[#ffb26b] border-2 border-[#111] px-4 py-1 font-black text-xs mb-10 shadow-[4px_4px_0px_0px_rgba(17,17,17,1)] uppercase">{card.jobTitle}</div>
+            <div className="w-full space-y-4 mb-12">
+                <a href={`tel:${card.socials.phone}`} className="block bg-[#7b113a] text-white border-4 border-[#111] py-4 font-black shadow-[6px_6px_0px_0px_rgba(17,17,17,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all uppercase">CALL NOW</a>
+                <a href={`mailto:${card.socials.email}`} className="block bg-[#150e56] text-white border-4 border-[#111] py-4 font-black shadow-[6px_6px_0px_0px_rgba(17,17,17,1)] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all uppercase">EMAIL US</a>
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
+
+const BotanicalTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#f1f3f0] p-10 flex flex-col max-w-md mx-auto animate-fade-in-up font-serif">
+        <div className="bg-white rounded-t-full p-10 flex-1 flex flex-col items-center text-center shadow-lg border-t-8 border-[#3d5a44]">
+            <img src={card.profileImage} className="w-36 h-36 rounded-full object-cover mb-8 shadow-md border-4 border-white" alt={card.fullName} />
+            <h1 className="text-3xl font-light text-[#2d3a30] mb-2 leading-none">{card.fullName}</h1>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-[#3d5a44] font-bold mb-10">{card.jobTitle}</p>
+            <div className="w-full space-y-4 mb-12">
+                 <SocialButton href={`tel:${card.socials.phone}`} icon={Icons.Phone} label="Voice" color="#3d5a44" className="rounded-full" />
+                 <SocialButton href={`mailto:${card.socials.email}`} icon={Icons.Mail} label="Inquiry" color="transparent" outline textColor="#3d5a44" className="rounded-full" />
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
+
+const CompactTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-slate-900 p-4 flex flex-col justify-center max-w-md mx-auto animate-fade-in-up">
+        <div className="bg-white rounded-[2.5rem] p-6 flex items-center gap-6 shadow-2xl mb-4 overflow-hidden border-b-[10px] border-blue-600">
+            <img src={card.profileImage} className="w-24 h-24 rounded-2xl object-cover shadow-lg" alt={card.fullName} />
+            <div className="flex-1">
+                <h1 className="text-xl font-black text-slate-900 leading-none mb-1">{card.fullName}</h1>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-none">{card.jobTitle}</p>
+                <div className="flex gap-2 mt-4">
+                     <a href={`tel:${card.socials.phone}`} className="p-2.5 bg-slate-100 rounded-xl text-slate-600 hover:bg-blue-600 hover:text-white transition shadow-sm"><Icons.Phone size={18}/></a>
+                     <a href={`mailto:${card.socials.email}`} className="p-2.5 bg-slate-100 rounded-xl text-slate-600 hover:bg-blue-600 hover:text-white transition shadow-sm"><Icons.Mail size={18}/></a>
                 </div>
             </div>
         </div>
-    );
-};
+        <div className="bg-white rounded-[2.5rem] p-8 flex-1 shadow-2xl overflow-y-auto no-scrollbar border border-slate-100">
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
 
-// --- Template 9: Glass ---
-const GlassTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen bg-cover bg-center flex items-center justify-center p-4 max-w-md mx-auto shadow-2xl text-white animate-fade-in-up" 
-             style={{backgroundImage: `url(${card.bannerImage || card.profileImage})`}}>
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-0"></div>
-            
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl w-full relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-                 <div className="flex flex-col items-center">
-                    <div className="relative">
-                        <img src={card.profileImage} className="w-24 h-24 rounded-full border-2 border-white/50 object-cover mb-4" />
-                        {card.logoImage && <img src={card.logoImage} className="absolute bottom-2 -right-2 w-8 h-8 rounded bg-white p-0.5" alt="Logo" />}
-                    </div>
-                    
-                    <h1 className="text-2xl font-bold shadow-black drop-shadow-md">{card.fullName}</h1>
-                    <p className="text-white/80 font-medium mb-6">{card.jobTitle}</p>
-                    
-                    <div className="w-full space-y-3 mb-8">
-                        <a href={card.socials.phone ? `tel:${card.socials.phone}` : '#'} className="bg-white/20 hover:bg-white/30 transition-all duration-300 p-3 rounded-xl flex items-center gap-3 backdrop-blur-sm hover:scale-[1.02]">
-                            <Icons.Phone size={20} /> <span className="font-medium">Call Me</span>
-                        </a>
-                        <a href={card.socials.email ? `mailto:${card.socials.email}` : '#'} className="bg-white/20 hover:bg-white/30 transition-all duration-300 p-3 rounded-xl flex items-center gap-3 backdrop-blur-sm hover:scale-[1.02]">
-                            <Icons.Mail size={20} /> <span className="font-medium">Email</span>
-                        </a>
-                        <a href={card.socials.website || '#'} className="bg-white/20 hover:bg-white/30 transition-all duration-300 p-3 rounded-xl flex items-center gap-3 backdrop-blur-sm hover:scale-[1.02]">
-                            <Icons.Globe size={20} /> <span className="font-medium">Website</span>
-                        </a>
-                    </div>
-
-                    <div className="w-full space-y-8">
-                        {/* Custom rendering for Glass Template because it wraps sections in glass containers */}
-                        {(card.sectionOrder || ['services', 'hours', 'map']).map(sectionId => {
-                            if (sectionId === 'services') return card.services?.length ? <div key="services" className="bg-white/20 p-4 rounded-xl backdrop-blur-sm"><ServicesBlock card={card} darkMode /></div> : null;
-                            if (sectionId === 'hours') return card.businessHours?.length ? <div key="hours" className="bg-white/20 p-4 rounded-xl backdrop-blur-sm"><HoursBlock card={card} darkMode /></div> : null;
-                            if (sectionId === 'map') return card.showMap ? <MapBlock key="map" card={card} darkMode /> : null;
-                            return null;
-                        })}
-                    </div>
-                    
-                    <div className="mt-8 flex justify-center gap-5">
-                         {card.socials.linkedin && <a href={card.socials.linkedin} className="text-white hover:opacity-80 transition-transform duration-300 hover:scale-125"><Icons.Linkedin /></a>}
-                         {card.socials.instagram && <a href={card.socials.instagram} className="text-white hover:opacity-80 transition-transform duration-300 hover:scale-125"><Icons.Instagram /></a>}
-                         {card.socials.facebook && <a href={card.socials.facebook} className="text-white hover:opacity-80 transition-transform duration-300 hover:scale-125"><Icons.Facebook /></a>}
-                    </div>
-                 </div>
+const InstaTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto animate-fade-in-up">
+        <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+            <Icons.ExternalLink size={24} className="text-slate-400" />
+            <span className="font-black text-lg tracking-tight lowercase">{card.fullName.replace(/\s/g, '')}</span>
+            <Icons.Share size={24} className="text-slate-400" />
+        </div>
+        <div className="p-6">
+            <div className="flex gap-6 items-center mb-6">
+                <img src={card.profileImage} className="w-20 h-20 rounded-full object-cover p-1 border-2 border-pink-500 shadow-lg" alt={card.fullName} />
+                <div className="flex flex-1 justify-around text-center">
+                    <div><div className="font-black text-lg">24</div><div className="text-[10px] text-slate-400 uppercase font-bold">Posts</div></div>
+                    <div><div className="font-black text-lg">1.2k</div><div className="text-[10px] text-slate-400 uppercase font-bold">Reach</div></div>
+                </div>
             </div>
+            <div className="mb-6">
+                <h2 className="font-black text-base leading-none mb-1">{card.fullName}</h2>
+                <p className="text-slate-500 text-sm mb-3">{card.jobTitle} @ {card.companyName}</p>
+                <p className="text-slate-800 text-sm leading-relaxed">{card.bio}</p>
+            </div>
+            <div className="flex gap-4 mb-8">
+                <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Contact" color="#efeff4" textColor="black" className="border-none rounded-xl py-2.5" />
+                <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email" color="#efeff4" textColor="black" className="border-none rounded-xl py-2.5" />
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
         </div>
-    );
-};
+    </div>
+);
 
-// --- Template 10: Playful ---
-const PlayfulTemplate: React.FC<TemplateProps> = ({ card }) => {
-    return (
-        <div className="min-h-screen bg-yellow-50 p-6 font-sans max-w-md mx-auto shadow-2xl flex flex-col justify-center animate-fade-in-up">
-           <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-xl p-8 text-center relative max-h-[90vh] overflow-y-auto no-scrollbar">
-                {card.logoImage && (
-                    <img src={card.logoImage} className="absolute top-4 left-4 w-8 h-8 object-contain" alt="Logo" />
-                )}
-
-                <div className="inline-block p-1 border-4 border-black rounded-full mb-4 bg-yellow-300">
-                    <img src={card.profileImage} className="w-24 h-24 rounded-full border-2 border-black object-cover" />
-                </div>
-                
-                <h1 className="text-3xl font-black text-black mb-2 uppercase">{card.fullName}</h1>
-                <div className="inline-block bg-black text-white px-3 py-1 text-sm font-bold transform -rotate-2 mb-6">
-                    {card.jobTitle}
-                </div>
-                
-                <p className="font-bold text-gray-700 mb-8 border-y-2 border-black py-4 border-dashed">
-                    {card.bio}
-                </p>
-                
-                <div className="space-y-4 mb-8">
-                     <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call Now!" color="#FF90E8" textColor="black" className="!border-black !border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none !rounded-lg" />
-                     <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Send Email" color="#23A094" textColor="black" className="!border-black !border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none !rounded-lg" />
-                     <SocialButton href={card.socials.website} icon={Icons.Globe} label="My Site" color="#FFC900" textColor="black" className="!border-black !border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-1 hover:shadow-none !rounded-lg" />
-                </div>
-
-                <DynamicSections card={card} />
-
-                <div className="mt-8 flex justify-center gap-4">
-                     {card.socials.instagram && <a href={card.socials.instagram} className="text-black hover:scale-110 transition transform"><Icons.Instagram size={28} /></a>}
-                     {card.socials.twitter && <a href={card.socials.twitter} className="text-black hover:scale-110 transition transform"><Icons.Twitter size={28} /></a>}
-                </div>
-           </div>
+const NeoBrutalistTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-[#FFF000] p-6 max-w-md mx-auto animate-fade-in-up font-sans">
+        <div className="bg-white border-[6px] border-black p-8 flex-1 flex flex-col items-center text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
+            <div className="w-40 h-40 border-[6px] border-black mb-8 overflow-hidden bg-black shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
+                <img src={card.profileImage} className="w-full h-full object-cover grayscale" alt={card.fullName} />
+            </div>
+            <h1 className="text-4xl font-black text-black mb-2 uppercase tracking-tighter italic leading-none">{card.fullName}</h1>
+            <div className="bg-black text-white px-6 py-1.5 text-xs font-black uppercase mb-10 transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(255,0,0,1)]">{card.jobTitle}</div>
+            <div className="w-full space-y-6 mb-10">
+                <a href={`tel:${card.socials.phone}`} className="block bg-[#00F0FF] border-[6px] border-black py-4 font-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-2 active:translate-y-2 transition-all uppercase text-sm tracking-widest">DIAL USER</a>
+                <a href={`mailto:${card.socials.email}`} className="block bg-[#FF00FF] border-[6px] border-black py-4 font-black text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-2 active:translate-y-2 transition-all uppercase text-sm tracking-widest">SEND DATA</a>
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
         </div>
-    );
-};
+    </div>
+);
 
+const ModernTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto shadow-2xl animate-fade-in-up overflow-hidden">
+        <div className="h-56 bg-cover bg-center relative" style={{ backgroundImage: `url(${card.bannerImage || 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=800'})` }}>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+        </div>
+        <div className="px-8 -mt-20 flex flex-col items-center pb-12">
+            <img src={card.profileImage} className="w-40 h-40 rounded-[2.5rem] object-cover border-[6px] border-white shadow-2xl mb-6 transition hover:scale-105" alt={card.fullName} />
+            <h1 className="text-3xl font-black text-slate-900 leading-none mb-2 tracking-tight">{card.fullName}</h1>
+            <p className="text-slate-500 font-bold text-sm mb-10 tracking-wide">{card.jobTitle} • {card.companyName}</p>
+            <div className="w-full grid grid-cols-2 gap-4 mb-12">
+                 <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Call" color={card.primaryColor} />
+                 <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Email" color="#111" />
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
 
+const ProfessionalTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto shadow-2xl animate-fade-in-up border-t-[12px]" style={{ borderColor: card.primaryColor }}>
+        <div className="p-10 flex flex-col items-center text-center">
+            <img src={card.profileImage} className="w-36 h-36 rounded-2xl object-cover mb-8 shadow-xl" alt={card.fullName} />
+            <h1 className="text-3xl font-black text-slate-900 mb-1 tracking-tighter leading-none">{card.fullName}</h1>
+            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">{card.jobTitle}</p>
+            <div className="w-full space-y-4 mb-12">
+                <SocialButton href={card.socials.phone ? `tel:${card.socials.phone}` : undefined} icon={Icons.Phone} label="Voice Call" color={card.primaryColor} className="rounded-none font-black" />
+                <SocialButton href={card.socials.email ? `mailto:${card.socials.email}` : undefined} icon={Icons.Mail} label="Inquiry" color="transparent" outline textColor={card.primaryColor} className="rounded-none font-black" />
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
+
+const DarkTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center p-8 text-center max-w-md mx-auto shadow-2xl relative animate-fade-in-up">
+        <div className="absolute top-6 right-6 w-3 h-3 rounded-full shadow-lg" style={{ backgroundColor: card.primaryColor }}></div>
+        <img src={card.profileImage} className="w-32 h-32 rounded-full object-cover ring-4 ring-zinc-800 mb-8 shadow-2xl" alt={card.fullName} />
+        <h1 className="text-4xl font-black mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-zinc-500 tracking-tighter leading-none">{card.fullName}</h1>
+        <p className="text-zinc-500 font-bold text-xs uppercase tracking-[0.3em] mb-10">{card.jobTitle} • {card.companyName}</p>
+        <div className="w-full grid grid-cols-3 gap-3 mb-10 text-zinc-400">
+            <a href={`tel:${card.socials.phone}`} className="flex flex-col items-center gap-2 py-5 bg-zinc-900 rounded-3xl border border-zinc-800 transition hover:border-zinc-500 shadow-inner"><Icons.Phone /><span className="text-[10px] font-black uppercase opacity-40 tracking-widest">Call</span></a>
+            <a href={`mailto:${card.socials.email}`} className="flex flex-col items-center gap-2 py-5 bg-zinc-900 rounded-3xl border border-zinc-800 transition hover:border-zinc-500 shadow-inner"><Icons.Mail /><span className="text-[10px] font-black uppercase opacity-40 tracking-widest">Email</span></a>
+            <a href={card.socials.website} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-2 py-5 bg-zinc-900 rounded-3xl border border-zinc-800 transition hover:border-zinc-500 shadow-inner"><Icons.Globe /><span className="text-[10px] font-black uppercase opacity-40 tracking-widest">Web</span></a>
+        </div>
+        <DynamicSections card={card} darkMode />
+        <SocialGrid card={card} darkMode />
+    </div>
+);
+
+const GradientTemplate: React.FC<TemplateProps> = ({ card }) => (
+    <div className="min-h-screen flex items-center justify-center p-6 max-w-md mx-auto animate-fade-in-up" style={{background: `linear-gradient(135deg, ${card.primaryColor}, #1a1a1a)`}}>
+        <div className="bg-white/95 backdrop-blur rounded-[3rem] p-10 w-full shadow-2xl text-center">
+            <img src={card.profileImage} className="w-24 h-24 rounded-full mx-auto border-4 border-white shadow-xl -mt-20 object-cover mb-6" alt={card.fullName} />
+            <h1 className="text-3xl font-black text-slate-900 mb-1 leading-none">{card.fullName}</h1>
+            <p className="text-sm font-bold text-slate-400 mb-10 tracking-widest uppercase">{card.jobTitle}</p>
+            <div className="w-full space-y-4 mb-10">
+                <SocialButton href={`tel:${card.socials.phone}`} icon={Icons.Phone} label="Call Me" color={card.primaryColor} className="rounded-2xl" />
+                <SocialButton href={`mailto:${card.socials.email}`} icon={Icons.Mail} label="Email Me" color="transparent" outline textColor={card.primaryColor} className="rounded-2xl" />
+            </div>
+            <DynamicSections card={card} />
+            <SocialGrid card={card} />
+        </div>
+    </div>
+);
+
+// Router for all templates
 export const TemplateRenderer: React.FC<TemplateProps> = (props) => {
   switch (props.card.templateId) {
+    case 'venura': return <VenuraTemplate {...props} />;
     case 'modern': return <ModernTemplate {...props} />;
     case 'dark': return <DarkTemplate {...props} />;
     case 'professional': return <ProfessionalTemplate {...props} />;
@@ -707,7 +647,16 @@ export const TemplateRenderer: React.FC<TemplateProps> = (props) => {
     case 'gradient': return <GradientTemplate {...props} />;
     case 'glass': return <GlassTemplate {...props} />;
     case 'playful': return <PlayfulTemplate {...props} />;
-    case 'minimal': 
+    case 'luxe': return <LuxeTemplate {...props} />;
+    case 'cyberpunk': return <CyberpunkTemplate {...props} />;
+    case 'terminal': return <TerminalTemplate {...props} />;
+    case 'insta': return <InstaTemplate {...props} />;
+    case 'neobrutalist': return <NeoBrutalistTemplate {...props} />;
+    case 'softui': return <SoftUITemplate {...props} />;
+    case 'botanical': return <BotanicalTemplate {...props} />;
+    case 'monochrome': return <MonochromeTemplate {...props} />;
+    case 'retro': return <RetroTemplate {...props} />;
+    case 'compact': return <CompactTemplate {...props} />;
     default: return <MinimalTemplate {...props} />;
   }
 };
